@@ -152,3 +152,81 @@ bonificacion: DECIMAL(10,2)
 Utiliza estas variables para almacenar el salario del empleado y calcular la bonificación.
 
 Este paso ya se implementó en la creación de la función calcular_bonificacion, donde se declararon y usaron las variables salario_base y bonificacion.
+
+## Codigo completo:
+
+    DROP DATABASE IF EXISTS Empresa;
+    create database Empresa;
+
+    use Empresa;
+
+    create table Departamentos (
+	departamento_id INT auto_increment primary key,
+	nombre VARCHAR(100) not NULL
+    );
+
+    create table Empleados (
+	empleado_id INT auto_increment primary key,
+	nombre VARCHAR(100) not null,
+	salario DECIMAL(10, 2) not null,
+	departamento_id INT,
+	constraint fk_departamento_empleado foreign key (departamento_id) references Departamentos(departamento_id)	
+    );
+
+    create table Proyectos (
+	proyecto_id INT auto_increment primary key,
+	nombre VARCHAR(100) not NULL
+    );
+
+    create table Empleado_proyecto (
+	empleado_id INT,
+	proyecto_id INT,
+	primary key (empleado_id, proyecto_id),
+	foreign key (empleado_id) references Empleados(empleado_id),
+	foreign key (proyecto_id) references Proyectos(proyecto_id)
+    );
+
+    create table Detalles_empleado (
+	empleado_id INT primary key,
+	direccion VARCHAR(255) not null,
+	telefono VARCHAR(15) not null,
+	constraint fk_empleado_detalle foreign key (empleado_id) REFERENCES Empleados(empleado_id)
+    );
+
+    INSERT INTO departamentos (nombre) VALUES ('Recursos Humanos'), ('Tecnología'), ('Marketing'), ('Ventas');
+
+    INSERT INTO empleados (nombre, salario, departamento_id) VALUES
+    ('Felipe Abril', 2000.00, 1),
+    ('Juan Marquez', 2500.00, 2),
+    ('Carlos Buitrago', 1500.00, 3),
+    ('Juana Rojas', 3000.00, 4);
+
+    INSERT INTO proyectos (nombre) VALUES ('Proyecto A'), ('Proyecto B'), ('Proyecto C');
+
+    INSERT INTO empleado_proyecto (empleado_id, proyecto_id) VALUES
+    (1, 1), (2, 1), (3, 2), (4, 3);
+
+    INSERT INTO detalles_empleado (empleado_id, direccion, telefono) VALUES
+    (1, '456 Calle Fake', '1234567890'),
+    (2, '456 Avenida Mayor', '0987654321'),
+    (3, '789 Boulevard Niza', '1122334455'),
+    (4, '321 Plaza Menor', '6677889900');
+
+    DELIMITER $$
+
+    create function Calcular_bonificacion(empleado_id INT) RETURNS DECIMAL(10, 2)
+    DETERMINISTIC
+    BEGIN
+	declare salario_base DECIMAL(10, 2);
+	declare bonificacion DECIMAL(10, 2);
+
+	select salario into salario_base
+	from Empleados
+	where empleado_id = empleado_id;
+
+	set bonificacion = salario_base * 0.10;
+
+	return bonificacion;
+    END$$
+
+    DELIMITER ;
